@@ -13,6 +13,26 @@ export const FingerprintScanner = ({ onScanComplete, isActive }: FingerprintScan
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<'idle' | 'success' | 'failed' | 'duplicate'>('idle');
 
+  // Create alarm sound for duplicate detection
+  const playAlarmSound = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  };
+
   // Mock voter database
   const mockVoters = [
     { id: "IND001", name: "Rajesh Kumar", hasVoted: false },
@@ -37,6 +57,7 @@ export const FingerprintScanner = ({ onScanComplete, isActive }: FingerprintScan
         if (voter.hasVoted) {
           setScanResult('duplicate');
           setIsScanning(false);
+          playAlarmSound(); // Play alarm for duplicate vote
           onScanComplete(false, voter.id, true);
         } else {
           setScanResult('success');
