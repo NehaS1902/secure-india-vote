@@ -31,6 +31,14 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -80,10 +88,22 @@ export default {
             height: "0",
           },
         },
+        "scan": {
+          "0%": { transform: "translateY(-100%)", opacity: "0" },
+          "50%": { transform: "translateY(0%)", opacity: "1" },
+          "100%": { transform: "translateY(100%)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "scan": "scan 2s ease-in-out infinite",
+      },
+      backgroundImage: {
+        'gradient-tricolor': 'var(--gradient-tricolor)',
+        'gradient-saffron': 'var(--gradient-saffron)',
+        'gradient-secure': 'var(--gradient-secure)',
       },
     },
   },
