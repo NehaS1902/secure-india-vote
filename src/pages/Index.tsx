@@ -25,6 +25,7 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState<'scanner' | 'ballot' | 'complete'>('scanner');
   const [voterInfo, setVoterInfo] = useState<VoterInfo | null>(null);
   const [alert, setAlert] = useState<Alert>({ type: 'info', title: '', message: '', isVisible: false });
+  const [votedVoters, setVotedVoters] = useState<Set<string>>(new Set(['IND002'])); // Pre-mark one voter as having voted
   const [stats, setStats] = useState({
     totalVoters: 1247,
     votedCount: 892,
@@ -48,7 +49,10 @@ const Index = () => {
     if (success && voterId) {
       const voterNames: Record<string, string> = {
         'IND001': 'Rajesh Kumar',
-        'IND003': 'Amit Singh'
+        'IND002': 'Priya Sharma',
+        'IND003': 'Amit Singh',
+        'IND004': 'Sunita Devi',
+        'IND005': 'Arjun Patel'
       };
       
       setVoterInfo({ id: voterId, name: voterNames[voterId] || 'Unknown Voter' });
@@ -63,6 +67,11 @@ const Index = () => {
   };
 
   const handleVoteSubmit = (candidateId: string) => {
+    // Mark this voter as having voted
+    if (voterInfo?.id) {
+      setVotedVoters(prev => new Set([...prev, voterInfo.id]));
+    }
+    
     setCurrentStep('complete');
     setStats(prev => ({ ...prev, votedCount: prev.votedCount + 1 }));
     showAlert('success', 'Vote Recorded Successfully!', 
@@ -159,6 +168,7 @@ const Index = () => {
                 <FingerprintScanner 
                   onScanComplete={handleScanComplete}
                   isActive={true}
+                  votedVoters={votedVoters}
                 />
               </div>
             </div>

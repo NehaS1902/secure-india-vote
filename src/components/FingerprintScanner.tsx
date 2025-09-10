@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 interface FingerprintScannerProps {
   onScanComplete: (success: boolean, voterId?: string, isDuplicate?: boolean) => void;
   isActive: boolean;
+  votedVoters: Set<string>; // Track who has voted
 }
 
-export const FingerprintScanner = ({ onScanComplete, isActive }: FingerprintScannerProps) => {
+export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: FingerprintScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<'idle' | 'success' | 'failed' | 'duplicate'>('idle');
 
@@ -33,11 +34,13 @@ export const FingerprintScanner = ({ onScanComplete, isActive }: FingerprintScan
     oscillator.stop(audioContext.currentTime + 0.3);
   };
 
-  // Mock voter database
+  // Mock voter database - now properly checks real vote status
   const mockVoters = [
-    { id: "IND001", name: "Rajesh Kumar", hasVoted: false },
-    { id: "IND002", name: "Priya Sharma", hasVoted: true }, // Already voted
-    { id: "IND003", name: "Amit Singh", hasVoted: false },
+    { id: "IND001", name: "Rajesh Kumar" },
+    { id: "IND002", name: "Priya Sharma" },
+    { id: "IND003", name: "Amit Singh" },
+    { id: "IND004", name: "Sunita Devi" },
+    { id: "IND005", name: "Arjun Patel" },
   ];
 
   const simulateScan = () => {
@@ -48,13 +51,14 @@ export const FingerprintScanner = ({ onScanComplete, isActive }: FingerprintScan
 
     // Simulate scanning delay
     setTimeout(() => {
-      // Random selection of voter with 80% success rate
+      // Random selection of voter with 85% success rate
       const random = Math.random();
       
-      if (random < 0.8) {
+      if (random < 0.85) {
         const voter = mockVoters[Math.floor(Math.random() * mockVoters.length)];
         
-        if (voter.hasVoted) {
+        // Check if this voter has already voted using the real votedVoters set
+        if (votedVoters.has(voter.id)) {
           setScanResult('duplicate');
           setIsScanning(false);
           playAlarmSound(); // Play alarm for duplicate vote
