@@ -45,7 +45,8 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
     { id: "IND005", name: "Arjun Patel" },
   ];
 
-  const authenticateWithBiometric = async () => {
+  const authenticateWithBiometric = async (e?: React.MouseEvent) => {
+    e?.preventDefault(); // Prevent any default form submission
     if (!isActive) return;
     
     setIsScanning(true);
@@ -226,6 +227,7 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
         </div>
 
         <Button 
+          type="button"
           onClick={authenticateWithBiometric}
           disabled={!isActive || isScanning}
           className="w-full bg-gradient-saffron hover:opacity-90 transition-opacity"

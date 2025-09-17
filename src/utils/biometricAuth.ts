@@ -71,17 +71,23 @@ export class BiometricAuth {
 
   private static async authenticateWebAuthn(options: any): Promise<BiometricAuthResult> {
     try {
+      console.log('🌐 Starting WebAuthn authentication...');
+      
       if (!window.PublicKeyCredential) {
+        console.log('❌ WebAuthn not supported in this browser');
         throw new Error('WebAuthn not supported');
       }
 
       // Create a simple WebAuthn challenge for biometric authentication
+      const randomBytes = new Uint8Array(32);
+      crypto.getRandomValues(randomBytes);
+      
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: new Uint8Array(32),
+          challenge: randomBytes,
           rp: {
             name: "India Election System",
-            id: window.location.hostname,
+            id: window.location.hostname.includes('localhost') ? 'localhost' : window.location.hostname,
           },
           user: {
             id: new Uint8Array(16),
@@ -96,10 +102,11 @@ export class BiometricAuth {
             authenticatorAttachment: "platform",
             userVerification: "required",
           },
-          timeout: 60000,
+          timeout: 30000,
         },
       });
 
+      console.log('✅ WebAuthn authentication successful');
       return {
         success: !!credential,
         method: 'webauthn'
