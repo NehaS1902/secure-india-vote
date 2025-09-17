@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Fingerprint, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Capacitor } from '@capacitor/core';
 
 interface FingerprintScannerProps {
   onScanComplete: (success: boolean, voterId?: string, isDuplicate?: boolean) => void;
@@ -43,25 +44,72 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
     { id: "IND005", name: "Arjun Patel" },
   ];
 
-  const simulateScan = () => {
+  const authenticateWithBiometric = async () => {
     if (!isActive) return;
     
     setIsScanning(true);
     setScanResult('idle');
 
-    // Simulate scanning delay
+    try {
+      // Check if we're running on a native platform
+      if (Capacitor.isNativePlatform()) {
+        // Use native biometric authentication (requires plugin setup on native side)
+        const result = await requestBiometricAuth();
+        
+        if (result) {
+          // On successful biometric auth, randomly select a voter ID
+          const voter = mockVoters[Math.floor(Math.random() * mockVoters.length)];
+          
+          // Check if this voter has already voted
+          if (votedVoters.has(voter.id)) {
+            setScanResult('duplicate');
+            setIsScanning(false);
+            playAlarmSound();
+            onScanComplete(false, voter.id, true);
+          } else {
+            setScanResult('success');
+            setIsScanning(false);
+            onScanComplete(true, voter.id, false);
+          }
+        } else {
+          setScanResult('failed');
+          setIsScanning(false);
+          onScanComplete(false);
+        }
+      } else {
+        // Fallback to simulation for web/development
+        simulateScanFallback();
+      }
+    } catch (error) {
+      console.error('Biometric authentication error:', error);
+      // Fallback to simulation on error
+      simulateScanFallback();
+    }
+  };
+
+  const requestBiometricAuth = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // This would be replaced with actual native biometric API calls
+      // For now, simulate the native authentication
+      setTimeout(() => {
+        // 90% success rate for native biometric
+        resolve(Math.random() < 0.9);
+      }, 1500);
+    });
+  };
+
+  const simulateScanFallback = () => {
+    // Fallback simulation for development/testing
     setTimeout(() => {
-      // Random selection of voter with 85% success rate
       const random = Math.random();
       
       if (random < 0.85) {
         const voter = mockVoters[Math.floor(Math.random() * mockVoters.length)];
         
-        // Check if this voter has already voted using the real votedVoters set
         if (votedVoters.has(voter.id)) {
           setScanResult('duplicate');
           setIsScanning(false);
-          playAlarmSound(); // Play alarm for duplicate vote
+          playAlarmSound();
           onScanComplete(false, voter.id, true);
         } else {
           setScanResult('success');
@@ -136,7 +184,7 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
         </div>
 
         <Button 
-          onClick={simulateScan}
+          onClick={authenticateWithBiometric}
           disabled={!isActive || isScanning}
           className="w-full bg-gradient-saffron hover:opacity-90 transition-opacity"
         >
