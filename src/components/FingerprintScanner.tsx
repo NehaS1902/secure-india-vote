@@ -57,20 +57,7 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
         const result = await requestBiometricAuth();
         
         if (result) {
-          // On successful biometric auth, randomly select a voter ID
-          const voter = mockVoters[Math.floor(Math.random() * mockVoters.length)];
-          
-          // Check if this voter has already voted
-          if (votedVoters.has(voter.id)) {
-            setScanResult('duplicate');
-            setIsScanning(false);
-            playAlarmSound();
-            onScanComplete(false, voter.id, true);
-          } else {
-            setScanResult('success');
-            setIsScanning(false);
-            onScanComplete(true, voter.id, false);
-          }
+          handleSuccessfulAuth();
         } else {
           setScanResult('failed');
           setIsScanning(false);
@@ -84,6 +71,47 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
       console.error('Biometric authentication error:', error);
       // Fallback to simulation on error
       simulateScanFallback();
+    }
+  };
+
+  const handleSuccessfulAuth = () => {
+    // Simulate fingerprint selection - higher chance of duplicate for testing
+    const random = Math.random();
+    let voter;
+    
+    // 40% chance to select a voter who has already voted (for testing duplicates)
+    if (random < 0.4 && votedVoters.size > 0) {
+      const votedVoterIds = Array.from(votedVoters);
+      voter = mockVoters.find(v => v.id === votedVoterIds[Math.floor(Math.random() * votedVoterIds.length)]);
+      console.log('🔍 Simulating duplicate voter attempt:', voter?.id, voter?.name);
+    } else {
+      // Select random voter
+      voter = mockVoters[Math.floor(Math.random() * mockVoters.length)];
+      console.log('🔍 Selected voter for authentication:', voter?.id, voter?.name);
+    }
+    
+    if (!voter) {
+      setScanResult('failed');
+      setIsScanning(false);
+      onScanComplete(false);
+      return;
+    }
+
+    console.log('📊 Current voted voters:', Array.from(votedVoters));
+    console.log('❓ Has this voter already voted?', votedVoters.has(voter.id));
+    
+    // Check if this voter has already voted
+    if (votedVoters.has(voter.id)) {
+      console.log('🚨 DUPLICATE VOTE DETECTED for voter:', voter.id, voter.name);
+      setScanResult('duplicate');
+      setIsScanning(false);
+      playAlarmSound();
+      onScanComplete(false, voter.id, true);
+    } else {
+      console.log('✅ Valid new voter:', voter.id, voter.name);
+      setScanResult('success');
+      setIsScanning(false);
+      onScanComplete(true, voter.id, false);
     }
   };
 
@@ -104,19 +132,9 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
       const random = Math.random();
       
       if (random < 0.85) {
-        const voter = mockVoters[Math.floor(Math.random() * mockVoters.length)];
-        
-        if (votedVoters.has(voter.id)) {
-          setScanResult('duplicate');
-          setIsScanning(false);
-          playAlarmSound();
-          onScanComplete(false, voter.id, true);
-        } else {
-          setScanResult('success');
-          setIsScanning(false);
-          onScanComplete(true, voter.id, false);
-        }
+        handleSuccessfulAuth();
       } else {
+        console.log('❌ Fingerprint authentication failed');
         setScanResult('failed');
         setIsScanning(false);
         onScanComplete(false);

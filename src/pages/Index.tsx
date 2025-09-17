@@ -39,7 +39,10 @@ const Index = () => {
   };
 
   const handleScanComplete = (success: boolean, voterId?: string, isDuplicate?: boolean) => {
+    console.log('🎯 handleScanComplete called:', { success, voterId, isDuplicate });
+    
     if (isDuplicate) {
+      console.log('🚨 Processing duplicate vote for voter:', voterId);
       showAlert('warning', 'Duplicate Vote Detected!', 
         `Voter ID ${voterId} has already cast their vote. Multiple voting attempts are strictly prohibited.`);
       setStats(prev => ({ ...prev, duplicateAttempts: prev.duplicateAttempts + 1 }));
@@ -69,7 +72,12 @@ const Index = () => {
   const handleVoteSubmit = (candidateId: string) => {
     // Mark this voter as having voted
     if (voterInfo?.id) {
-      setVotedVoters(prev => new Set([...prev, voterInfo.id]));
+      console.log('📝 Marking voter as voted:', voterInfo.id);
+      setVotedVoters(prev => {
+        const newSet = new Set([...prev, voterInfo.id]);
+        console.log('📊 Updated voted voters:', Array.from(newSet));
+        return newSet;
+      });
     }
     
     setCurrentStep('complete');
