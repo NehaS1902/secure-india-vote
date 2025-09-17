@@ -9,11 +9,8 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
-    FingerprintAIO: {
-      disableBackup: false,
-      localizedFallbackTitle: 'Use Passcode',
-      localizedReason: 'Please authenticate to access the voting system'
-    }
+    // Biometric authentication will be handled by custom implementation
+    // Add native plugins here when deploying to mobile devices
   }
 };
 
