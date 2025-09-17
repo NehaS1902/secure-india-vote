@@ -9,7 +9,11 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
-    // Add biometric plugins here when implementing native biometric auth
+    FingerprintAIO: {
+      disableBackup: false,
+      localizedFallbackTitle: 'Use Passcode',
+      localizedReason: 'Please authenticate to access the voting system'
+    }
   }
 };
 

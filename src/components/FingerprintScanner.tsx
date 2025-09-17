@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Fingerprint, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Capacitor } from '@capacitor/core';
+import { FingerprintAIO } from '@ionic-native/fingerprint-aio';
 
 interface FingerprintScannerProps {
   onScanComplete: (success: boolean, voterId?: string, isDuplicate?: boolean) => void;
@@ -116,14 +117,37 @@ export const FingerprintScanner = ({ onScanComplete, isActive, votedVoters }: Fi
   };
 
   const requestBiometricAuth = async (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      // This would be replaced with actual native biometric API calls
-      // For now, simulate the native authentication
-      setTimeout(() => {
-        // 90% success rate for native biometric
-        resolve(Math.random() < 0.9);
-      }, 1500);
-    });
+    try {
+      console.log('🔐 Checking if biometric authentication is available...');
+      
+      // Check if fingerprint authentication is available
+      const isAvailable = await FingerprintAIO.isAvailable();
+      console.log('📱 Biometric availability:', isAvailable);
+      
+      if (isAvailable) {
+        console.log('🔐 Starting fingerprint authentication...');
+        
+        // Request fingerprint authentication
+        const result = await FingerprintAIO.show({
+          title: 'Biometric Authentication',
+          subtitle: 'India Election System',
+          description: 'Place your finger on the sensor to verify your identity and cast your vote',
+          fallbackButtonTitle: 'Use Password',
+          disableBackup: false
+        });
+        
+        console.log('✅ Fingerprint authentication successful:', result);
+        return true;
+        
+      } else {
+        console.log('❌ Biometric authentication not available on this device');
+        return false;
+      }
+      
+    } catch (error) {
+      console.error('❌ Fingerprint authentication failed:', error);
+      return false;
+    }
   };
 
   const simulateScanFallback = () => {
